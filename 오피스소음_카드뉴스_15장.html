@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>벽을 없앤 사무실, 정작 왜 아무도 말을 안 할까 - 카드뉴스</title>
+<style>
+  :root{
+    --navy:#1f3c56;
+    --navy-dark:#152a3d;
+    --red:#c0392b;
+    --gold:#c9a227;
+    --cream:#faf7f2;
+    --ink:#20242b;
+    --sub:#6b7280;
+    --line:#e0dcd3;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+    background:#dcdcdc;
+    overflow:hidden;
+  }
+
+  .viewport{
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+  }
+
+  .track{
+    display:flex;
+    overflow-x:auto;
+    scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;
+    width:100%;
+    height:100%;
+    align-items:center;
+    scrollbar-width:none;
+  }
+  .track::-webkit-scrollbar{display:none;}
+
+  .page{
+    flex:0 0 100%;
+    scroll-snap-align:center;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:100%;
+  }
+
+  .card{
+    width:min(88vw, 380px);
+    aspect-ratio:4/5;
+    max-height:82vh;
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 10px 34px rgba(0,0,0,0.18);
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    padding:34px 28px;
+    color:var(--ink);
+  }
+
+  .page-num{
+    position:absolute;
+    top:18px;
+    right:22px;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.5px;
+  }
+
+  /* ---- shared bits ---- */
+  .tag{
+    display:inline-block;
+    font-size:11.5px;
+    font-weight:700;
+    padding:5px 12px;
+    border-radius:20px;
+    width:fit-content;
+    letter-spacing:0.2px;
+  }
+  .headline{
+    font-size:21px;
+    font-weight:700;
+    line-height:1.42;
+    margin-top:18px;
+  }
+  .footer-src{
+    margin-top:auto;
+    font-size:10.5px;
+    line-height:1.5;
+    padding-top:14px;
+  }
+
+  /* ---- THEME: navy (cover / conclusion) ---- */
+  .theme-navy{ background:var(--navy); color:#fff; }
+  .theme-navy .page-num{ color:rgba(255,255,255,0.45); }
+  .theme-navy .eyebrow{
+    font-size:12.5px; font-weight:500; color:#8fa8c0;
+    display:flex; align-items:center; gap:8px;
+  }
+  .theme-navy .eyebrow::before{ content:""; width:16px; height:2px; background:var(--gold); display:inline-block; }
+  .theme-navy h1{ font-size:30px; font-weight:900; line-height:1.35; margin-top:22px; letter-spacing:-0.3px; }
+  .theme-navy .sub{ font-size:14px; color:#b9c9d8; margin-top:14px; line-height:1.6; font-weight:400; }
+  .theme-navy .bottom{ display:flex; justify-content:space-between; align-items:center; margin-top:auto; }
+  .theme-navy .brand{ font-size:11px; color:#6f8aa3; font-weight:500; }
+  .theme-navy .swipe{ font-size:11.5px; color:var(--gold); font-weight:700; }
+
+  /* ---- THEME: cream (data / stat) ---- */
+  .theme-cream{ background:var(--cream); }
+  .theme-cream .page-num{ color:#c7c2b8; }
+  .theme-cream .tag{ background:var(--navy); color:#fff; }
+  .theme-cream .tag.red{ background:var(--red); }
+
+  .stat-block{ margin-top:22px; border-top:1px solid var(--line); }
+  .stat-row{
+    display:flex; align-items:baseline; justify-content:space-between;
+    padding:15px 0; border-bottom:1px solid var(--line);
+  }
+  .stat-row .num{ font-size:36px; font-weight:900; color:var(--red); line-height:1; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .stat-row .num.navy{ color:var(--navy); }
+  .stat-row .desc{ font-size:13px; color:var(--sub); text-align:right; max-width:150px; line-height:1.5; font-weight:500; }
+  .footer-src.on-cream{ color:#a3a3a3; }
+
+  .bignum{
+    font-size:64px; font-weight:900; color:var(--red); line-height:1; margin-top:22px; font-variant-numeric:tabular-nums;
+  }
+  .bignum.navy{ color:var(--navy); }
+  .bignum-desc{ font-size:14px; color:var(--sub); margin-top:12px; line-height:1.6; font-weight:500; }
+
+  .twocol{ display:flex; gap:12px; margin-top:24px; }
+  .twocol .col{ flex:1; }
+  .twocol .num{ font-size:30px; font-weight:900; line-height:1; }
+  .twocol .lbl{ font-size:12px; color:var(--sub); margin-top:8px; font-weight:500; line-height:1.4; }
+
+  /* ---- THEME: quote (voice) ---- */
+  .theme-quote{ background:#232b35; color:#fff; }
+  .theme-quote .page-num{ color:rgba(255,255,255,0.35); }
+  .theme-quote .tag{ background:rgba(255,255,255,0.12); color:#d9c26a; }
+  .theme-quote .qmark{ font-size:52px; color:var(--gold); font-weight:900; line-height:1; margin-top:16px; font-family:Georgia, serif; }
+  .theme-quote .qtext{ font-size:18px; line-height:1.65; font-weight:500; margin-top:6px; color:#f1efe9; }
+  .theme-quote .qsrc{ font-size:12px; color:#9aa5b1; margin-top:16px; font-weight:500; }
+  .theme-quote .note{ margin-top:auto; font-size:12.5px; color:#c9c2b0; line-height:1.6; padding-top:16px; border-top:1px solid rgba(255,255,255,0.12); }
+
+  /* ---- THEME: concept (comparison) ---- */
+  .theme-concept{ background:#fff; border:1px solid var(--line); }
+  .theme-concept .tag{ background:var(--gold); color:#4a3c0a; }
+  .compare{ display:flex; gap:14px; margin-top:22px; flex:1; }
+  .compare .box{ flex:1; border-radius:12px; padding:18px 14px; display:flex; flex-direction:column; }
+  .compare .box.a{ background:#fdeee9; }
+  .compare .box.b{ background:#e9eef3; }
+  .compare .box .name{ font-size:15px; font-weight:700; }
+  .compare .box.a .name{ color:#a34426; }
+  .compare .box.b .name{ color:var(--navy); }
+  .compare .box .desc{ font-size:12.5px; color:var(--sub); margin-top:10px; line-height:1.55; font-weight:500; }
+
+  /* nav controls */
+  .dots{
+    position:absolute; bottom:14px; left:50%; transform:translateX(-50%);
+    display:flex; gap:6px; z-index:10;
+  }
+  .dot{ width:6px; height:6px; border-radius:50%; background:rgba(0,0,0,0.2); transition:all .2s; cursor:pointer; }
+  .dot.active{ background:var(--navy); width:16px; border-radius:3px; }
+
+  .arrow{
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,0.9);
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    box-shadow:0 2px 10px rgba(0,0,0,0.15); z-index:10; font-size:16px; color:var(--navy); font-weight:900;
+    user-select:none;
+  }
+  .arrow.left{ left:14px; }
+  .arrow.right{ right:14px; }
+  .arrow.hidden{ opacity:0; pointer-events:none; }
+
+  @media (max-width:640px){
+    .arrow{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="viewport">
+  <div class="track" id="track">
+
+    <!-- 01 : 타이틀 -->
+    <div class="page"><div class="card theme-navy">
+      <span class="page-num">01 / 15</span>
+      <div class="eyebrow">오피스 인사이트 시리즈</div>
+      <h1>벽을 없앤 사무실,<br>정작 왜 아무도<br>말을 안 할까?</h1>
+      <p class="sub">오피스 소음의 역설,<br>그리고 다시 생각해봐야 할 공간 기획</p>
+      <div class="bottom">
+        <span class="brand">국보디자인 DX 인사이트</span>
+        <span class="swipe">넘겨보기 →</span>
+      </div>
+    </div></div>
+
+    <!-- 02 : RFP 근거 -->
+    <div class="page"><div class="card theme-cream">
+      <span class="page-num">02 / 15</span>
+      <span class="tag">우리가 시작한 이유 · 국보디자인 RFP 분석</span>
+      <div class="headline">오피스 RFP 15건 중 3건,<br>약속한 듯 같은 걸 요구했다</div>
+      <div class="bignum navy">20%</div>
+      <p class="bignum-desc">업종도 발주처도 전혀 다른 오피스 RFP 15건 가운데 3건이 &lsquo;방음&rsquo;을 최우선 요구사항으로 명시 — 바이엘코리아 · 파스퇴르 · 성원애드피아</p>
+      <div class="footer-src on-cream">출처: 국보디자인 RFP 분석 (2025년 하반기~2026년 상반기, 오피스 15건)</div>
+    </div></div>
+
+    <!-- 03 : 이어폰 눈치싸움 -->
+    <div class="page"><div class="card theme-quote">
+      <span class="page-num">03 / 15</span>
+      <span class="tag">국내 실무자 목소리 · 블라인드</span>
+      <div class="qmark">&ldquo;</div>
+      <p class="qtext">동료들 전화나 대화 때문에 집중이 잘 안되네요... 목소리 크신 분이나 쓸데없는 말 많이 하신 분이 있다고 생각하고 댓글 달아주세요!</p>
+      <p class="qsrc">— 블라인드 블라블라 게시판</p>
+      <div class="note">이어폰을 끼면 &ldquo;말 걸기 어려운 사람&rdquo;이 되고, 안 끼면 옆자리 소음을 고스란히 견뎌야 한다. 매일 반복되는 눈치 싸움이다.</div>
+    </div></div>
+
+    <!-- 04 : 이직 사유가 된 소음 -->
+    <div class="page"><div class="card theme-quote">
+      <span class="page-num">04 / 15</span>
+      <span class="tag">국내 실무자 목소리 · 블라인드 기업 리뷰</span>
+      <div class="qmark">&ldquo;</div>
+      <p class="qtext">단점: 회사가 시끄러워서 업무에 집중 안됨. 이직 사유: 내 사수 맨날 새벽에 퇴근하는 거 보고 나도 도망침.</p>
+      <p class="qsrc">— 블라인드 기업 리뷰</p>
+      <div class="note">소음은 그 자체로 퇴사 사유가 되진 않아도, 다른 불만과 겹치며 &ldquo;떠나야 할 이유&rdquo; 목록의 한 줄을 차지한다.</div>
+    </div></div>
+
+    <!-- 05 : 개방형 오피스 딜레마 (BCO 45%) -->
+    <div class="page"><div class="card theme-cream">
+      <span class="page-num">05 / 15</span>
+      <span class="tag red">국내외 실무자 인터뷰 · BCO 2016</span>
+      <div class="headline">절반 넘는 직원이,<br>매일 못 참을 소음 속에서 일한다</div>
+      <div class="bignum">45%</div>
+      <p class="bignum-desc">개방형 오피스에서 일하는 직원 중 &ldquo;소음 수준이 수용할 만하다&rdquo;고 답한 비율. 나머지 절반 이상은 매일 참기 어려운 소음을 견디고 있다.</p>
+      <div class="footer-src on-cream">출처: British Council for Offices, 「What Workers Want 2016」</div>
+    </div></div>
+
+    <!-- 06 : Jabra 2024 -->
+    <div class="page"><div class="card theme-cream">
+      <span class="page-num">06 / 15</span>
+      <span class="tag">해외 사례 · Jabra 2024</span>
+      <div class="headline">지식근로자 10명 중 6명이<br>소음 때문에 집중을 못한다</div>
+      <div class="stat-block">
+        <div class="stat-row"><span class="num">63%</span><span class="desc">소음으로 인한<br>집중력 저하 경험</span></div>
+        <div class="stat-row"><span class="num navy">47%</span><span class="desc">소음 스트레스로<br>집중 자체가 불가능</span></div>
+        <div class="stat-row"><span class="num navy">10%</span><span class="desc">소음을 피해<br>화장실로 도피한 적 있음</span></div>
+      </div>
+      <div class="footer-src on-cream">출처: Jabra, 「Making the Workplace Sound Better」 (2024, 4개국 지식근로자 2,000명)</div>
+    </div></div>
+
+    <!-- 07 : 하버드 연구 -->
+    <div class="page"><div class="card theme-cream">
+      <span class="page-num">07 / 15</span>
+      <span class="tag">해외 사례 · Harvard Business School, 2018</span>
+      <div class="headline">벽을 없앴더니,<br>대화가 70% 사라졌다</div>
+      <div class="stat-block">
+        <div class="stat-row"><span class="num">-70%</span><span class="desc">대면 대화<br>(개방형 전환 후)</span></div>
+        <div class="stat-row"><span class="num navy">+56%</span><span class="desc">이메일 사용량</span></div>
+        <div class="stat-row"><span class="num navy">+67%</span><span class="desc">메신저 사용량</span></div>
+      </div>
+      <div class="footer-src on-cream">출처: Bernstein, E. &amp; Turban, S., Phil. Trans. Royal Society B, 2018</div>
+    </div></div>
+
+    <!-- 08 : 옆자리 대화의 비용 -->
+    <div class="page"><div class="card theme-cream">
+      <span class="page-num">08 / 15</span>
+      <span class="tag red">해외 사례 · Framery / Gloria Mark(UC Irvine)</span>
+      <div class="headline">옆자리 대화 한마디의<br>진짜 비용</div>
+      <div class="twocol">
+        <div class="col"><div class="num" style="color:var(--red)">66%</div><div class="lbl">옆자리 대화 한 번에<br>순간 생산성 손실</div></div>
+        <div class="col"><div class="num" style="color:var(--navy)">23분<br>15초</div><div class="lbl">방해 후 원래 집중으로<br>돌아오는 데 걸리는 시간</div></div>
+      </div>
+      <p class="bignum-desc" style="margin-top:20px;">오전에 네 번만 방해받아도, 회복에만 약 1시간 30분이 증발한다.</p>
+      <div class="footer-src on-cream">출처: Framery / Gloria Mark, UC Irvine</div>
+    </div></div>
+
+    <!-- 09 : 소음의 청구서 -->
+    <div class="page"><div class="card theme-cream">
+      <span class="page-num">09 / 15</span>
+      <span class="tag">해외 사례 · Oxford Economics 외</span>
+      <div class="headline">소음이 만든 청구서</div>
+      <div class="twocol">
+        <div class="col"><div class="num" style="color:var(--navy)">$650B</div><div class="lbl">미국 기업<br>연간 생산성 손실 추정</div></div>
+        <div class="col"><div class="num" style="color:var(--red)">€159억</div><div class="lbl">유럽(EU) 기업<br>연간 생산성 손실 추정</div></div>
+      </div>
+      <p class="bignum-desc" style="margin-top:20px;">그런데도 방음 설비를 실제로 갖춘 기업은 <b>6%</b>뿐. 소음이 심한 사무실일수록 6개월 내 이직 의향도 유의미하게 높았다.</p>
+      <div class="footer-src on-cream">출처: Oxford Economics &amp; Plantronics, "When the Walls Come Down"</div>
+    </div></div>
+
+    <!-- 10 : GSA 바자회 vs 도서관 -->
+    <div class="page"><div class="card theme-concept">
+      <span class="page-num">10 / 15</span>
+      <span class="tag">극복 사례 · 미국 연방조달청(GSA), 2011</span>
+      <div class="headline">모든 공간을<br>하나로 설계하지 마라</div>
+      <div class="compare">
+        <div class="box a">
+          <div class="name">바자회<br>Bazaar</div>
+          <div class="desc">활발한 대화와 즉흥적 협업이 벌어지는 곳. 소리가 오가는 게 자연스러운 공간</div>
+        </div>
+        <div class="box b">
+          <div class="name">도서관<br>Library</div>
+          <div class="desc">집중과 몰입이 필요한 곳. 정숙이 기본값인 공간</div>
+        </div>
+      </div>
+      <div class="footer-src" style="color:var(--sub)">출처: GSA, 「Sound Matters」— 연방 오피스 7곳 재설계 프로젝트</div>
+    </div></div>
+
+    <!-- 11 : 프라이버시 지수 PI 80 -->
+    <div class="page"><div class="card theme-cream">
+      <span class="page-num">11 / 15</span>
+      <span class="tag">극복 사례 · GSA Privacy Index</span>
+      <div class="headline">숫자로 재는<br>방음의 기준</div>
+      <div class="bignum navy">PI 80</div>
+      <p class="bignum-desc">정상적인 스피치 프라이버시를 확보하려면 필요한 최소 기준. 대부분의 일반 상업 오피스는 이 기준에 못 미친다 — &ldquo;적당히 조용한 것 같다&rdquo;는 감이 아니라 측정 가능한 기준이 필요하다.</p>
+      <div class="footer-src on-cream">출처: GSA, 「Sound Matters: How to Achieve Acoustic Comfort in the Contemporary Office」, 2011</div>
+    </div></div>
+
+    <!-- 12 : 사운드마스킹 사례 -->
+    <div class="page"><div class="card theme-concept">
+      <span class="page-num">12 / 15</span>
+      <span class="tag">극복 사례 · Tampa, Third Lake Partners</span>
+      <div class="headline">소리를 없애는 대신,<br>안 들리게 만든다</div>
+      <p class="bignum-desc" style="margin-top:20px; font-size:14.5px;">사람 말소리와 비슷한 주파수의 배경음(사운드마스킹)을 깔아 대화 자체를 알아듣기 어렵게 만드는 기술.</p>
+      <p class="bignum-desc" style="margin-top:14px; font-size:14.5px;">도입 후 배경 잡담이 눈에 띄게 줄고, 사적인 대화가 보호되었으며, 개방된 업무 공간의 방해 요소가 크게 줄었다.</p>
+      <div class="footer-src" style="color:var(--sub)">출처: Commercial Acoustics, Sound Masking Case Study, Tampa FL</div>
+    </div></div>
+
+    <!-- 13 : 폰부스 확산 -->
+    <div class="page"><div class="card theme-cream">
+      <span class="page-num">13 / 15</span>
+      <span class="tag red">극복 사례 · 글로벌 오피스 트렌드</span>
+      <div class="headline">방음은 이제<br>옵션이 아니라 기본값</div>
+      <div class="bignum">+500%</div>
+      <p class="bignum-desc">오피스 폰부스·집중부스 문의량, 1년 새 증가율. 보잉 · 스타벅스 · 텐센트 · 화웨이 · LG 등 업종을 가리지 않고 도입 중이다.</p>
+      <div class="footer-src on-cream">출처: 2727 Coworking, 「Office Phone Booth Market: Top Manufacturers &amp; Growth Data」, 2025</div>
+    </div></div>
+
+    <!-- 14 : 결론 -->
+    <div class="page"><div class="card theme-navy">
+      <span class="page-num">14 / 15</span>
+      <div class="eyebrow">결론</div>
+      <h1 style="font-size:26px;">소음은 불편이 아니라<br>청구서였다</h1>
+      <p class="sub" style="margin-top:18px; line-height:1.75;">
+        ① 프라이버시 지수(PI) 80 이상을 기준으로<br>
+        ② 사운드마스킹처럼 &lsquo;안 들리게&rsquo; 만드는 기술 도입<br>
+        ③ 폰부스·집중부스를 옵션이 아닌 기본 설비로
+      </p>
+      <div class="bottom">
+        <span class="brand">관계도, 소음도 결국 &ldquo;공간을 어떻게 구획하느냐&rdquo;의 문제였다</span>
+      </div>
+    </div></div>
+
+    <!-- 15 : 마무리 질문 -->
+    <div class="page"><div class="card theme-navy">
+      <span class="page-num">15 / 15</span>
+      <div class="eyebrow">다시, 질문</div>
+      <h1 style="font-size:25px; margin-top:26px;">우리는 지금,<br>조용해야 할 곳과<br>시끄러워도 되는 곳을<br>구분해서 설계하고<br>있는가?</h1>
+      <div class="bottom">
+        <span class="brand">국보디자인 DX 인사이트 · 오피스 시리즈</span>
+      </div>
+    </div></div>
+
+  </div>
+
+  <div class="arrow left" id="arrowLeft">‹</div>
+  <div class="arrow right" id="arrowRight">›</div>
+  <div class="dots" id="dots"></div>
+</div>
+
+<script>
+  const track = document.getElementById('track');
+  const pages = document.querySelectorAll('.page');
+  const dotsWrap = document.getElementById('dots');
+  const arrowLeft = document.getElementById('arrowLeft');
+  const arrowRight = document.getElementById('arrowRight');
+  const total = pages.length;
+
+  for(let i=0;i<total;i++){
+    const d = document.createElement('div');
+    d.className = 'dot' + (i===0 ? ' active' : '');
+    d.addEventListener('click', ()=> scrollToPage(i));
+    dotsWrap.appendChild(d);
+  }
+  const dots = document.querySelectorAll('.dot');
+
+  function scrollToPage(i){
+    track.scrollTo({ left: track.clientWidth * i, behavior:'smooth' });
+  }
+
+  function currentIndex(){
+    return Math.round(track.scrollLeft / track.clientWidth);
+  }
+
+  function updateUI(){
+    const idx = currentIndex();
+    dots.forEach((d,i)=> d.classList.toggle('active', i===idx));
+    arrowLeft.classList.toggle('hidden', idx===0);
+    arrowRight.classList.toggle('hidden', idx===total-1);
+  }
+
+  track.addEventListener('scroll', ()=>{
+    window.requestAnimationFrame(updateUI);
+  });
+
+  arrowLeft.addEventListener('click', ()=> scrollToPage(Math.max(0, currentIndex()-1)));
+  arrowRight.addEventListener('click', ()=> scrollToPage(Math.min(total-1, currentIndex()+1)));
+
+  window.addEventListener('keydown', (e)=>{
+    if(e.key==='ArrowRight') scrollToPage(Math.min(total-1, currentIndex()+1));
+    if(e.key==='ArrowLeft') scrollToPage(Math.max(0, currentIndex()-1));
+  });
+
+  updateUI();
+</script>
+
+</body>
+</html>
